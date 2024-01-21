@@ -63,4 +63,15 @@ def test_patch_order_by_id(unique_pet_data):
     response = api_helpers.post_api_data(test_endpoint,json.loads(json.dumps(body)))
     assert response.status_code == 201
     validate(instance=response.json(), schema=schemas.order)
+
+    getOrderId = response.json().get("id")
+    test_endpoint = "/store/order"
+    patch_payload = {
+                        "status": "sold"
+                    }
+    patchStr = json.dumps(patch_payload)
+   
+    response = patch_api_data(test_endpoint,json.loads(patchStr),getOrderId)
+    assert response.status_code == 200
+    assert response.json().get('message') == "Order and pet status updated successfully"
     pass
