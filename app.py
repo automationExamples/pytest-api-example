@@ -47,7 +47,12 @@ pets = [
     }
 ]
 
-orders = {}
+orders = {
+'1': {
+        'pet_id': 1, 'name': 'snowball', 'type': 'cat', 'status': 'available'
+    }
+}
+
 
 '''
 Pet Namespace
@@ -138,14 +143,21 @@ class OrderUpdateResource(Resource):
     @store_ns.doc('update_order')
     @store_ns.expect(order_update_model)
     def patch(self, order_id):
+        
         """Update an existing order"""
         if order_id not in orders:
             api.abort(404, "Order not found")
 
         update_data = request.json
         order = orders[order_id]
+        print('orderx ',order)
         pet_id = order['pet_id']
+
+        
+
         pet = next((pet for pet in pets if pet['id'] == pet_id), None)
+
+        print("petxx :" , pet)
 
         if pet is None:
             api.abort(404, f"No pet found with ID {pet_id}")
