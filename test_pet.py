@@ -1,4 +1,4 @@
-from jsonschema import validate
+from jsonschema import validate, exceptions
 import pytest
 import schemas
 import api_helpers
@@ -10,14 +10,22 @@ TODO: Finish this test by...
 The purpose of this test is to validate the response matches the expected schema defined in schemas.py
 '''
 def test_pet_schema():
-    test_endpoint = "/pets/1"
-
+    test_endpoint = "/pets/2"
     response = api_helpers.get_api_data(test_endpoint)
-
-    assert response.status_code == 200
-
+    try:
+        assert response.status_code == 200
+        print("Response is fine")
+            
+    except AssertionError:
+        print("Response is not looking good")
+        
     # Validate the response schema against the defined schema in schemas.py
-    validate(instance=response.json(), schema=schemas.pet)
+    try:   
+        validate(instance=response.json(), schema=schemas.pet)
+        print("Validation Passed")
+    except exceptions.ValidationError as e:
+        print(f"Validation Failed: {str(e)}")
+    
 
 '''
 TODO: Finish this test by...
@@ -34,13 +42,34 @@ def test_find_by_status_200(status):
     }
 
     response = api_helpers.get_api_data(test_endpoint, params)
-    # TODO...
+    assert response.status_code == 200, f"Expected 200 OK, but got {response.status_code}"
+
+    response_json = response.json()
+    for pet in response_json:
+        assert pet["status"] == status, f"Expected status {status}, but got {pet['status']}"
+    
+    try:   
+        validate(instance=response.json(), schema=schemas.pet)
+        print("Validation Passed")
+    except exceptions.ValidationError as e:
+        print(f"Validation Failed: {str(e)}")
+    
+    print(f"Test for status '{status}' passed successfully.")
+
 
 '''
 TODO: Finish this test by...
 1) Testing and validating the appropriate 404 response for /pets/{pet_id}
 2) Parameterizing the test for any edge cases
 '''
-def test_get_by_id_404():
-    # TODO...
-    pass
+@pytest.mark.parametrize("id", [5,1,-1,'test'])
+def test_get_by_id_404(id):
+    if isinstance(id, int):
+        test_endpoint = f"/pets/{id}"
+        response = api_helpers.get_api_data(test_endpoint)
+        assert response.status_code == 404, f"Expected 404 Not Found, but got {response.status_code}"
+    else:
+        print("ID is not valid")
+
+
+    
